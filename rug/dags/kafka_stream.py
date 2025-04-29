@@ -23,7 +23,7 @@ def get_data():
 def format_data(res):
     data = {}
     location = res['location']
-    data['id'] = uuid.uuid4()
+    data['id'] = str(uuid.uuid4())  
     data['first_name'] = res['name']['first']
     data['last_name'] = res['name']['last']
     data['gender'] = res['gender']
@@ -45,7 +45,8 @@ def stream_data():
     import time
     import logging
 
-    producer = KafkaProducer(bootstrap_servers=['broker:29092'], max_block_ms=5000)
+
+    producer = KafkaProducer(bootstrap_servers=['broker:29092'], max_block_ms=5000)    
     curr_time = time.time()
 
     while True:
@@ -55,17 +56,19 @@ def stream_data():
             res = get_data()
             res = format_data(res)
 
-            producer.send('users_created', json.dumps(res).encode('utf-8'))
+            producer.send('users_created', json.dumps(res, default= str).encode('utf-8'))
         except Exception as e:
             logging.error(f'An error occured: {e}')
             continue
 
 with DAG('user_automation',
          default_args=default_args,
-         schedule_interval='@daily',
+         schedule='@daily',
          catchup=False) as dag:
 
     streaming_task = PythonOperator(
         task_id='stream_data_from_api',
         python_callable=stream_data
     )
+
+stream_data()
