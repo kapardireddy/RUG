@@ -1,5 +1,5 @@
 import openmeteo_requests
-
+import s3fs
 import requests_cache
 import pandas as pd
 from retry_requests import retry
@@ -41,4 +41,4 @@ def run_meteo():
     hourly_data["temperature_2m"] = hourly_temperature_2m
 
     hourly_dataframe = pd.DataFrame(data = hourly_data)
-    hourly_dataframe.to_csv("temperature.csv")
+    hourly_dataframe.to_csv("s3://openmeteo-airflow/temperature.csv")
