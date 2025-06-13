@@ -7,7 +7,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 
 default_args = {
-    'owner': 'airscholar',
+    'owner': 'kap',
     'start_date': datetime(2023, 9, 3, 10, 00)
 }
 
