@@ -1,10 +1,12 @@
 import logging
+import findspark
+findspark.init()
 
+import pyspark
 from cassandra.cluster import Cluster
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import from_json, col
 from pyspark.sql.types import StructType, StructField, StringType
-
 
 def create_keyspace(session):
     session.execute("""
@@ -26,6 +28,7 @@ def create_table(session):
         post_code TEXT,
         email TEXT,
         username TEXT,
+        dob TEXT,
         registered_date TEXT,
         phone TEXT,
         picture TEXT);
@@ -69,9 +72,11 @@ def create_spark_connection():
     try:
         s_conn = SparkSession.builder \
             .appName('SparkDataStreaming') \
-            .config('spark.jars.packages', "com.datastax.spark:spark-cassandra-connector_2.13:3.4.1,"
-                                           "org.apache.spark:spark-sql-kafka-0-10_2.13:3.4.1") \
+            .config('spark.jars.packages', "com.datastax.spark:spark-cassandra-connector_2.13:3.5.0,"
+                                           "org.apache.spark:spark-sql-kafka-0-10_2.13:3.5.0") \
             .config('spark.cassandra.connection.host', 'localhost') \
+            .config('spark.hadoop.io.nativeio.enabled', 'false') \
+            .config("spark.sql.streaming.checkpointLocation", "file:///C:/tmp/spark_checkpoint") \
             .getOrCreate()
 
         s_conn.sparkContext.setLogLevel("ERROR")
@@ -121,6 +126,7 @@ def create_selection_df_from_kafka(spark_df):
         StructField("post_code", StringType(), False),
         StructField("email", StringType(), False),
         StructField("username", StringType(), False),
+        StructField("dob", StringType(), False),
         StructField("registered_date", StringType(), False),
         StructField("phone", StringType(), False),
         StructField("picture", StringType(), False)
